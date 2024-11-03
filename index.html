@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Voz</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #output {
+            font-size: 20px;
+            margin: 20px;
+            text-align: center;
+        }
+        #startButton {
+            background-color: #4CAF50; /* Verde */
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #startButton:hover {
+            background-color: #45a049; /* Verde más oscuro */
+        }
+    </style>
+</head>
+<body>
+    <div id="output">Di "asistente" para comenzar.</div>
+    <button id="startButton">🎤</button>
+
+    <script>
+        const output = document.getElementById('output');
+        let recognition;
+
+        function startRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'es-ES';
+
+                recognition.onstart = function() {
+                    output.textContent = 'Escuchando...';
+                };
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[event.resultIndex][0].transcript.toLowerCase();
+                    output.textContent = `Dijiste: "${transcript}"`;
+
+                    if (transcript.includes('asistente')) {
+                        output.textContent = '¿Qué quieres que busque?';
+                    } else if (transcript.includes('busca') || transcript.includes('buscar')) {
+                        const query = transcript.replace(/busca|buscar/g, '').trim();
+                        if (query) {
+                            window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                            output.textContent = `Buscando: ${query}`;
+                        } else {
+                            output.textContent = 'No dijiste nada para buscar.';
+                        }
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    output.textContent = 'Error de reconocimiento de voz. Inténtalo de nuevo.';
+                };
+
+                recognition.onend = function() {
+                    output.textContent = 'Escuchando...';
+                    startRecognition(); // Reinicia el reconocimiento cuando termina
+                };
+
+                // Comienza a escuchar
+                recognition.start();
+            } else {
+                output.textContent = 'El reconocimiento de voz no es soportado en este navegador.';
+            }
+        }
+
+        // Inicia el reconocimiento al cargar la página
+        startRecognition();
+    </script>
+</body>
+</html>
